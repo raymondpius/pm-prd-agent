@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Product Manager Copilot</title>
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #e0e7ff;
+    --secondary: #0ea5e9;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 70%, #6366f1 100%);
+    padding: 28px 32px 24px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 20%;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(8px);
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .header h1 span { color: #a5b4fc; }
+  .header p { font-size: 14px; color: rgba(255,255,255,0.7); max-width: 520px; }
+
+  /* MAIN */
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+  /* INPUT CARD */
+  .input-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .input-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .input-card-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .tone-selector {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .tone-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tone-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .tone-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+  .input-area {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    resize: vertical;
+    min-height: 90px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    background: #fafbfc;
+  }
+  .input-area:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); background: white; }
+  .input-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 14px; flex-wrap: wrap; gap: 12px;
+  }
+  .examples { display: flex; gap: 8px; flex-wrap: wrap; }
+  .example-chip {
+    padding: 5px 11px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .example-chip:hover { background: var(--primary); color: white; transform: translateY(-1px); }
+  .generate-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 11px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+  }
+  .generate-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,0.4); }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-icon { font-size: 16px; }
+
+  /* PROGRESS / LOADING */
+  .progress-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+    display: none;
+  }
+  .progress-card.visible { display: block; }
+  .progress-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+  .progress-steps { display: flex; flex-direction: column; gap: 8px; }
+  .progress-step {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text-muted);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    background: #f8fafc;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+  }
+  .progress-step.active { background: var(--primary-light); border-color: rgba(99,102,241,0.2); color: var(--primary-dark); }
+  .progress-step.done { color: var(--success); }
+  .step-icon { font-size: 16px; min-width: 20px; text-align: center; }
+  .step-spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(99,102,241,0.3);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    min-width: 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* OUTPUT AREA */
+  .output-area { display: none; }
+  .output-area.visible { display: block; }
+
+  /* TABS */
+  .tabs-container { margin-bottom: 6px; }
+  .tabs {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 6px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab-btn:hover { background: var(--bg); color: var(--text); }
+  .tab-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+  }
+  .tab-icon { font-size: 14px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SECTION CARDS */
+  .section-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(to right, #fafbff, #ffffff);
+  }
+  .section-title-row { display: flex; align-items: center; gap: 10px; }
+  .section-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: #eff6ff; }
+  .icon-purple { background: #f5f3ff; }
+  .icon-green { background: #f0fdf4; }
+  .icon-orange { background: #fff7ed; }
+  .icon-pink { background: #fdf2f8; }
+  .icon-teal { background: #f0fdfa; }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .section-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .section-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .action-btn {
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 4px;
+    white-space: nowrap;
+  }
+  .action-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .action-btn.edit-active { border-color: var(--warning); color: var(--warning); background: #fffbeb; }
+  .section-body { padding: 20px; }
+
+  /* CONTENT STYLES */
+  .content-block { font-size: 14px; line-height: 1.75; color: var(--text); }
+  .content-block[contenteditable="true"] {
+    outline: none;
+    border: 1.5px dashed var(--warning);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    background: #fffdf0;
+  }
+  .content-block h3 { font-size: 14px; font-weight: 700; color: var(--text); margin: 16px 0 6px; }
+  .content-block h3:first-child { margin-top: 0; }
+  .content-block h4 { font-size: 13px; font-weight: 700; color: var(--primary-dark); margin: 12px 0 4px; }
+  .content-block ul, .content-block ol { padding-left: 20px; margin: 6px 0; }
+  .content-block li { margin: 4px 0; }
+  .content-block p { margin: 8px 0; }
+  .content-block strong { font-weight: 700; color: var(--text); }
+  .content-block em { color: var(--text-muted); font-style: normal; font-size: 13px; }
+
+  /* QUESTION ITEMS */
+  .question-item {
+    background: linear-gradient(to right, #f8faff, #fafbff);
+    border: 1px solid #e8eeff;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .question-num {
+    width: 24px; height: 24px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .question-text { font-size: 14px; color: var(--text); line-height: 1.6; font-weight: 500; }
+  .question-why { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+
+  /* ASSUMPTION ITEMS */
+  .assumption-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 14px;
+    background: #fffbf0;
+    border: 1px solid #fde68a;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+  }
+  .assumption-icon { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+  .assumption-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .assumption-risk { font-size: 11px; color: var(--warning); font-weight: 700; margin-top: 2px; }
+
+  /* PERSONA CARDS */
+  .persona-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .persona-card {
+    background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);
+    border: 1px solid #e0e7ff;
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .persona-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .persona-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  .persona-name { font-size: 15px; font-weight: 800; color: var(--text); }
+  .persona-role { font-size: 12px; color: var(--primary); font-weight: 600; margin-bottom: 12px; }
+  .persona-section-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text-light);
+    margin: 10px 0 4px;
+  }
+  .persona-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .persona-tag {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag-goal { background: #f0fdf4; color: #059669; }
+  .tag-pain { background: #fef2f2; color: #dc2626; }
+  .tag-behavior { background: #eff6ff; color: #2563eb; }
+
+  /* METRIC ITEMS */
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .metric-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    position: relative;
+  }
+  .metric-type {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .metric-type.north-star { color: var(--warning); }
+  .metric-type.leading { color: var(--secondary); }
+  .metric-type.lagging { color: var(--primary); }
+  .metric-type.risk { color: var(--danger); }
+  .metric-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .metric-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .metric-value { font-size: 18px; font-weight: 800; color: var(--primary); margin-top: 8px; }
+
+  /* EXPERIMENT ITEMS */
+  .experiment-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .experiment-header-bar {
+    background: linear-gradient(to right, #f0f4ff, #f8f9ff);
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .experiment-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .experiment-badge {
+    padding: 2px 8px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .experiment-body { padding: 14px 16px; }
+  .exp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+  .exp-col-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 4px; }
+  .exp-col-val { font-size: 13px; color: var(--text); }
+
+  /* INSIGHT ITEMS */
+  .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .insight-card {
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    border: 1px solid;
+  }
+  .insight-card.danger { background: #fef2f2; border-color: #fecaca; }
+  .insight-card.info { background: #eff6ff; border-color: #bfdbfe; }
+  .insight-card.warning { background: #fffbeb; border-color: #fde68a; }
+  .insight-card.success { background: #f0fdf4; border-color: #bbf7d0; }
+  .insight-card-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+  .insight-card.danger .insight-card-title { color: var(--danger); }
+  .insight-card.info .insight-card-title { color: var(--secondary); }
+  .insight-card.warning .insight-card-title { color: var(--warning); }
+  .insight-card.success .insight-card-title { color: var(--success); }
+  .insight-list { list-style: none; padding: 0; }
+  .insight-list li { font-size: 13px; color: var(--text); padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.05); line-height: 1.5; }
+  .insight-list li:last-child { border-bottom: none; }
+  .insight-list li::before { content: '→ '; color: inherit; opacity: 0.6; font-weight: 700; }
+
+  /* PRIORITY TABLE */
+  .priority-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .priority-table th {
+    background: #f8fafc;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .priority-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text);
+    vertical-align: top;
+  }
+  .priority-table tr:last-child td { border-bottom: none; }
+  .priority-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .p-must { background: #fef2f2; color: #dc2626; }
+  .p-should { background: #fff7ed; color: #c2410c; }
+  .p-could { background: #fffbeb; color: #92400e; }
+  .p-wont { background: #f8fafc; color: #64748b; }
+  .rice-score {
+    font-size: 15px; font-weight: 800; color: var(--primary);
+  }
+
+  /* SCOPE SECTION */
+  .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .scope-col { }
+  .scope-col-header {
+    font-size: 12px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.6px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .scope-col-header.in { color: var(--success); }
+  .scope-col-header.out { color: var(--danger); }
+  .scope-item {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 8px 10px;
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .scope-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+  .scope-dot.in { background: var(--success); }
+  .scope-dot.out { background: var(--danger); }
+
+  /* ROLLOUT */
+  .rollout-phases { display: flex; flex-direction: column; gap: 0; }
+  .rollout-phase {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
+  }
+  .rollout-phase:last-child { border-bottom: none; }
+  .phase-indicator {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+    flex-shrink: 0;
+  }
+  .phase-circle {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .phase-line { width: 2px; flex: 1; background: var(--border); min-height: 20px; margin-top: 4px; }
+  .phase-content { flex: 1; padding-top: 4px; }
+  .phase-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .phase-timeline { font-size: 11px; color: var(--primary); font-weight: 700; margin-bottom: 6px; }
+  .phase-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* EXPORT BAR */
+  .export-bar {
+    display: flex; gap: 8px; align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .export-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .export-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: #1e293b;
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(80px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateY(0); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-muted);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .empty-desc { font-size: 14px; color: var(--text-muted); }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px; background: var(--border);
+    margin: 16px 0;
+  }
+
+  /* INLINE LABEL */
+  .inline-label {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 600px) {
+    .header { padding: 20px 16px; }
+    .main { padding: 16px; }
+    .input-card { padding: 18px; }
+    .scope-grid { grid-template-columns: 1fr; }
+    .exp-row { grid-template-columns: 1fr; }
+    .tab-btn { font-size: 12px; padding: 7px 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-badge"><span class="badge-dot"></span> AI-Powered</div>
+    <h1>AI Product Manager <span>Copilot</span></h1>
+    <p>Turn raw ideas into structured PRDs, metrics frameworks, experiment plans, and product insights — in seconds.</p>
+  </div>
+</div>
+
+<div class="main">
+  <!-- INPUT CARD -->
+  <div class="input-card">
+    <div class="input-card-header">
+      <span class="input-card-title">Describe your feature idea or problem statement</span>
+      <div class="tone-selector">
+        <button class="tone-btn active" data-tone="startup" onclick="setTone(this)">🚀 Startup</button>
+        <button class="tone-btn" data-tone="enterprise" onclick="setTone(this)">🏢 Enterprise</button>
+        <button class="tone-btn" data-tone="technical" onclick="setTone(this)">⚙️ Technical</button>
+      </div>
+    </div>
+    <textarea id="idea-input" class="input-area"
+      placeholder="e.g. We want to improve our new user onboarding flow to reduce drop-off and increase activation rates for our SaaS product..."
+      rows="4"></textarea>
+    <div class="input-actions">
+      <div class="examples">
+        <span style="font-size:12px;color:var(--text-muted);font-weight:600;align-self:center;">Try:</span>
+        <button class="example-chip" onclick="fillExample('Improve onboarding for new users')">Improve onboarding for new users</button>
+        <button class="example-chip" onclick="fillExample('Reduce churn in a subscription product')">Reduce churn in subscription</button>
+        <button class="example-chip" onclick="fillExample('Build a referral program feature')">Build referral feature</button>
+      </div>
+      <button class="generate-btn" id="gen-btn" onclick="generate()">
+        <span class="btn-icon">✦</span> Generate PRD
+      </button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-card" id="progress-card">
+    <div class="progress-title">⚡ Thinking like a PM...</div>
+    <div class="progress-steps" id="progress-steps"></div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="output-area" id="output-area">
+    <div class="export-bar">
+      <button class="export-btn" onclick="copyAll()">📋 Copy All</button>
+      <button class="export-btn" onclick="downloadMarkdown()">⬇️ Download Markdown</button>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('clarify', this)"><span class="tab-icon">❓</span> Clarifying Questions</button>
+      <button class="tab-btn" onclick="switchTab('prd', this)"><span class="tab-icon">📄</span> PRD</button>
+      <button class="tab-btn" onclick="switchTab('personas', this)"><span class="tab-icon">👤</span> Personas</button>
+      <button class="tab-btn" onclick="switchTab('metrics', this)"><span class="tab-icon">📊</span> Metrics Brain</button>
+      <button class="tab-btn" onclick="switchTab('experiments', this)"><span class="tab-icon">🧪</span> Experiments</button>
+      <button class="tab-btn" onclick="switchTab('insights', this)"><span class="tab-icon">💡</span> Product Insights</button>
+    </div>
+
+    <!-- CLARIFY TAB -->
+    <div class="tab-panel active" id="tab-clarify">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-blue">❓</div>
+            <div>
+              <div class="section-title">Clarifying Questions</div>
+              <div class="section-subtitle">Critical questions to sharpen your thinking before building</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('clarify')">↻ Regenerate</button>
+            <button class="action-btn" onclick="copySection('clarify-content')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="section-body" id="clarify-content"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-orange">⚠️</div>
+            <div>
+              <div class="section-title">Key Assumptions</div>
+              <div class="section-subtitle">Beliefs behind this idea that need validation</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('assumptions')">↻ Regenerate</button>
+            <button class="action-btn" onclick="copySection('assumptions-content')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="section-body" id="assumptions-content"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-purple">🎯</div>
+            <div>
+              <div class="section-title">Refined Problem Statement</div>
+              <div class="section-subtitle">Your problem reframed with precision and clarity</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="toggleEdit('refined-content', this)">✏️ Edit</button>
+            <button class="action-btn" onclick="regenSection('refined')">↻ Regenerate</button>
+            <button class="action-btn" onclick="copySection('refined-content')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="content-block" id="refined-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRD TAB -->
+    <div class="tab-panel" id="tab-prd">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-purple">📄</div>
+            <div>
+              <div class="section-title">Product Requirements Document</div>
+              <div class="section-subtitle">Full PRD with user stories, acceptance criteria, and scope</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="toggleEdit('prd-problem', this)">✏️ Edit</button>
+            <button class="action-btn" onclick="regenSection('prd')">↻ Regenerate</button>
+            <button class="action-btn" onclick="copySection('prd-full')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="section-body" id="prd-full"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-green">🎯</div>
+            <div>
+              <div class="section-title">Scope Definition</div>
+              <div class="section-subtitle">What's in MVP vs what's explicitly out of scope</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('scope')">↻ Regenerate</button>
+          </div>
+        </div>
+        <div class="section-body" id="scope-content"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-orange">🏆</div>
+            <div>
+              <div class="section-title">Prioritization Framework</div>
+              <div class="section-subtitle">RICE scores + MoSCoW classification</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('priority')">↻ Regenerate</button>
+          </div>
+        </div>
+        <div class="section-body" id="priority-content"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-pink">🚀</div>
+            <div>
+              <div class="section-title">Rollout Plan</div>
+              <div class="section-subtitle">Phased delivery strategy from alpha to GA</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('rollout')">↻ Regenerate</button>
+          </div>
+        </div>
+        <div class="section-body" id="rollout-content"></div>
+      </div>
+    </div>
+
+    <!-- PERSONAS TAB -->
+    <div class="tab-panel" id="tab-personas">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-teal">👤</div>
+            <div>
+              <div class="section-title">User Personas</div>
+              <div class="section-subtitle">Detailed profiles with goals, pain points, and behaviors</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('personas')">↻ Regenerate</button>
+            <button class="action-btn" onclick="copySection('personas-content')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="section-body" id="personas-content"></div>
+      </div>
+    </div>
+
+    <!-- METRICS TAB -->
+    <div class="tab-panel" id="tab-metrics">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-blue">📊</div>
+            <div>
+              <div class="section-title">Metrics Brain</div>
+              <div class="section-subtitle">North star, leading indicators, lagging indicators, and instrumentation</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('metrics')">↻ Regenerate</button>
+            <button class="action-btn" onclick="copySection('metrics-content')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="section-body" id="metrics-content"></div>
+      </div>
+    </div>
+
+    <!-- EXPERIMENTS TAB -->
+    <div class="tab-panel" id="tab-experiments">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-green">🧪</div>
+            <div>
+              <div class="section-title">Experimentation Plan</div>
+              <div class="section-subtitle">Hypotheses, A/B tests, and experiment designs from your PRD</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('experiments')">↻ Regenerate</button>
+            <button class="action-btn" onclick="copySection('experiments-content')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="section-body" id="experiments-content"></div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS TAB -->
+    <div class="tab-panel" id="tab-insights">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="section-icon icon-orange">💡</div>
+            <div>
+              <div class="section-title">Product Insights</div>
+              <div class="section-subtitle">Failure modes, tradeoffs, alternatives, and feature critique</div>
+            </div>
+          </div>
+          <div class="section-actions">
+            <button class="action-btn" onclick="regenSection('insights')">↻ Regenerate</button>
+            <button class="action-btn" onclick="copySection('insights-content')">📋 Copy</button>
+          </div>
+        </div>
+        <div class="section-body" id="insights-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let currentTone = 'startup';
+let currentIdea = '';
+let generatedData = {};
+
+const TONES = {
+  startup: { adj: 'scrappy', voice: 'Move fast, focus on impact, use active language, be opinionated.' },
+  enterprise: { adj: 'enterprise', voice: 'Professional, formal, risk-aware, compliance-conscious language.' },
+  technical: { adj: 'technical', voice: 'Precise, implementation-aware, developer-friendly, detail-oriented.' }
+};
+
+// ─────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────
+function setTone(btn) {
+  document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTone = btn.dataset.tone;
+}
+
+function fillExample(text) {
+  document.getElementById('idea-input').value = text;
+  document.getElementById('idea-input').focus();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = '✓ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleEdit(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isEditing = el.contentEditable === 'true';
+  el.contentEditable = isEditing ? 'false' : 'true';
+  btn.classList.toggle('edit-active', !isEditing);
+  btn.textContent = isEditing ? '✏️ Edit' : '✓ Done';
+  if (!isEditing) el.focus();
+}
+
+function copySection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(() => showToast('Copied to clipboard'));
+}
+
+function copyAll() {
+  const allText = Object.values(generatedData).join('\n\n---\n\n');
+  navigator.clipboard.writeText(allText).then(() => showToast('Full PRD copied'));
+}
+
+function downloadMarkdown() {
+  if (!Object.keys(generatedData).length) return;
+  const md = buildMarkdown();
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'prd-' + currentIdea.slice(0, 30).replace(/\s+/g, '-').toLowerCase() + '.md';
+  a.click();
+  showToast('Markdown downloaded');
+}
+
+// ─────────────────────────────────────────────
+// KEYWORD EXTRACTION
+// ─────────────────────────────────────────────
+function extractContext(idea) {
+  const lower = idea.toLowerCase();
+  const ctx = {
+    isOnboarding: /onboard|activation|sign.?up|first.?time|new user|welcome|setup/.test(lower),
+    isChurn: /churn|retention|cancel|drop.?off|lose|losing|keep|loyal/.test(lower),
+    isReferral: /referral|refer|viral|invite|share|word.?of.?mouth/.test(lower),
+    isSearch: /search|discover|find|browse|filter|sort/.test(lower),
+    isPayment: /payment|checkout|billing|subscription|pricing|plan|upgrade/.test(lower),
+    isNotification: /notif|email|push|alert|reminder|message/.test(lower),
+    isAnalytics: /analytics|dashboard|report|insight|data|metric|track/.test(lower),
+    isMobile: /mobile|app|ios|android/.test(lower),
+    isB2B: /b2b|enterprise|team|company|business|saas/.test(lower),
+    isB2C: /b2c|consumer|user|customer|people/.test(lower),
+    raw: idea
+  };
+  // derive product type
+  if (ctx.isB2B) ctx.productType = 'SaaS B2B platform';
+  else if (ctx.isMobile) ctx.productType = 'mobile app';
+  else ctx.productType = 'digital product';
+
+  // derive primary user
+  if (ctx.isB2B) ctx.primaryUser = 'business teams and admins';
+  else if (ctx.isOnboarding) ctx.primaryUser = 'new users in their first session';
+  else if (ctx.isChurn) ctx.primaryUser = 'existing users at risk of churning';
+  else ctx.primaryUser = 'end users of the product';
+
+  return ctx;
+}
+
+// ─────────────────────────────────────────────
+// CONTENT GENERATORS
+// ─────────────────────────────────────────────
+
+function genClarifyingQuestions(idea, ctx) {
+  const tone = TONES[currentTone];
+  const questions = [];
+
+  if (ctx.isOnboarding) {
+    questions.push({ q: 'What is the current activation rate, and at which specific step do most users drop off?', why: 'Pinpoints where to focus intervention rather than spray-and-pray improvements.' });
+    questions.push({ q: 'What actions define "activation" — is it a single event or a sequence of behaviors?', why: 'Activation means different things to different teams; misalignment here kills projects.' });
+    questions.push({ q: 'Are new users typically self-served or assisted by sales/CS during onboarding?', why: 'Changes the solution space dramatically — product vs. human-touch interventions.' });
+    questions.push({ q: 'What channels do new users arrive from, and do drop-off rates differ by channel?', why: 'Channel context shapes expected time-to-value and appropriate messaging.' });
+    questions.push({ q: 'What does success look like 30 days post-activation — retained, expanded, or referred?', why: 'Ensures the onboarding change drives durable business value, not just top-of-funnel vanity metrics.' });
+  } else if (ctx.isChurn) {
+    questions.push({ q: 'What is the current monthly churn rate, and how does it segment by user cohort or plan tier?', why: 'Churn is rarely uniform — the solution differs depending on which segment is churning.' });
+    questions.push({ q: 'Are users churning after a specific trigger event (e.g., billing failure, feature gap, competitor switch)?', why: 'Root cause matters more than frequency — reactive vs. proactive intervention.' });
+    questions.push({ q: 'Do churned users show behavioral signals (declining engagement) before canceling?', why: 'Early warning systems are only possible if predictive signals exist.' });
+    questions.push({ q: 'What is the cost of acquiring a new user vs. retaining an existing one?', why: 'Frames the ROI threshold for any retention investment.' });
+    questions.push({ q: 'Have users been surveyed post-churn, and what are the top 3 stated reasons?', why: 'Exit data prevents building solutions to the wrong problem.' });
+  } else if (ctx.isReferral) {
+    questions.push({ q: 'What is the current organic referral or word-of-mouth rate, if measurable?', why: 'Baseline tells you how much headroom exists and how broken the current experience is.' });
+    questions.push({ q: 'What motivates your existing power users to recommend the product today?', why: "Understanding native referral behavior tells you what to amplify, not what to manufacture." });
+    questions.push({ q: 'Will both the referrer and referee receive rewards, and what type (monetary, feature access, status)?', why: 'The incentive structure determines adoption rate and unit economics.' });
+    questions.push({ q: 'Are there compliance or legal constraints on referral incentives in your market?', why: 'Some industries (fintech, healthcare) restrict incentive-based referrals.' });
+    questions.push({ q: 'What defines a "successful" referral — signup, activation, first payment, or retained use?', why: 'Ties the referral program to real value, not just hollow growth metrics.' });
+  } else {
+    questions.push({ q: 'Who is the primary user experiencing this problem, and how often do they encounter it?', why: 'Frequency and severity determine whether this is worth building.' });
+    questions.push({ q: 'What is the current workaround users rely on, and why is it insufficient?', why: "Understanding workarounds reveals actual user intent vs. stated desire." });
+    questions.push({ q: 'What does success look like 90 days after shipping — which business metric improves?', why: 'Connects the feature to a measurable outcome the business cares about.' });
+    questions.push({ q: 'What are the key constraints: timeline, team size, technical debt, or compliance requirements?', why: 'Constraints determine which solution is actually feasible, not just desirable.' });
+    questions.push({ q: 'Are there competing initiatives in flight that could conflict, overlap, or depend on this work?', why: 'Cross-team dependencies are the silent killer of product timelines.' });
+  }
+  return questions;
+}
+
+function genAssumptions(idea, ctx) {
+  const base = [
+    { text: 'Users are experiencing the stated problem frequently enough to change behavior if solved.', risk: 'HIGH' },
+    { text: 'The team has the technical capability to ship this within the anticipated timeframe.', risk: 'MEDIUM' },
+    { text: 'Solving this problem will meaningfully move the target business metric.', risk: 'HIGH' },
+    { text: 'Users will discover and adopt the new feature without heavy support or training.', risk: 'MEDIUM' },
+  ];
+  if (ctx.isOnboarding) {
+    base.push({ text: "Users who drop off during onboarding would complete it if friction were reduced.", risk: 'HIGH' });
+    base.push({ text: "Activated users are meaningfully more likely to retain than non-activated users.", risk: 'MEDIUM' });
+  }
+  if (ctx.isChurn) {
+    base.push({ text: "Churned users would have stayed if a specific pain point had been resolved in time.", risk: 'HIGH' });
+    base.push({ text: "Behavioral signals before churn are detectable and actionable in the product.", risk: 'MEDIUM' });
+  }
+  if (ctx.isReferral) {
+    base.push({ text: "Existing users have a strong enough NPS to willingly refer peers when incentivized.", risk: 'HIGH' });
+    base.push({ text: "The referral reward is compelling enough to prompt action without cheapening the brand.", risk: 'MEDIUM' });
+  }
+  return base;
+}
+
+function genRefinedProblem(idea, ctx) {
+  if (ctx.isOnboarding) {
+    return `<p><strong>Current state:</strong> New users signing up for the ${ctx.productType} experience friction during their first session that causes them to disengage before reaching a meaningful "aha moment." The result is a high drop-off rate during the critical first 24–72 hours — the window with the highest correlation to long-term retention.</p>
+<p><strong>The real problem:</strong> The onboarding flow fails to bridge the gap between user intent at signup and the first tangible value delivery. Users arrive with a specific goal; the product presents a generic feature tour instead of a directed path to their first win.</p>
+<p><strong>Why it matters:</strong> Every percentage point gained in activation rate compounds directly into retention, LTV, and referral rates. Fixing onboarding is one of the highest-leverage investments a product team can make.</p>
+<p><strong>Success condition:</strong> A user who has completed onboarding has taken the core action(s) that predict 30-day retention — and can articulate the primary value the product delivers to them.</p>`;
+  } else if (ctx.isChurn) {
+    return `<p><strong>Current state:</strong> The ${ctx.productType} is losing users at a rate that undermines growth economics. Acquisition is bringing users in, but insufficient retention means the product is filling a leaky bucket rather than building a durable user base.</p>
+<p><strong>The real problem:</strong> Users are not experiencing enough sustained value to justify continued investment (time, money, or habit change). The product may solve the initial pain but fails to deliver compounding value over time — making it easy to cancel when friction appears.</p>
+<p><strong>Why it matters:</strong> A 5% improvement in retention can increase revenue by 25–95% (Bain & Co). Churn is not a support problem or a pricing problem — it is a product value problem.</p>
+<p><strong>Success condition:</strong> Users who engage with the product's core value loop at least 3× per week in their first 30 days retain at 2× the rate of those who don't. The goal is to design for that behavior.</p>`;
+  } else if (ctx.isReferral) {
+    return `<p><strong>Current state:</strong> Growth relies primarily on paid acquisition channels with rising CAC. Word-of-mouth exists organically but is not systematically captured, incentivized, or scaled. The product lacks a mechanism to turn satisfied users into a reliable acquisition channel.</p>
+<p><strong>The real problem:</strong> The product has users willing to recommend it, but there is no structured path for that intent to translate into measurable new users. The referral surface doesn't exist, is hard to find, or lacks enough incentive to prompt action.</p>
+<p><strong>Why it matters:</strong> Referred users typically have 16–37% higher LTV and churn at lower rates than paid-acquired users (Wharton). A well-designed referral program can reduce blended CAC while simultaneously improving new-user quality.</p>
+<p><strong>Success condition:</strong> The referral program generates at least 15–20% of new signups within 90 days, with referred users retaining at or above the product average.</p>`;
+  } else {
+    return `<p><strong>Current state:</strong> ${idea}</p>
+<p><strong>The real problem:</strong> Users lack a reliable, frictionless way to accomplish [core goal] within the ${ctx.productType}, forcing them to use workarounds that reduce trust, efficiency, and satisfaction. The gap between user expectation and product capability creates measurable drop-off at a key moment in the user journey.</p>
+<p><strong>Why it matters:</strong> When users can't achieve their primary goal, they either stop using the product, seek alternatives, or raise support burden — all of which have direct revenue impact. This is a product-market fit problem at the feature level.</p>
+<p><strong>Success condition:</strong> The solution is successful when the target user can accomplish their primary goal in fewer steps, in less time, with greater confidence — reflected in measurable improvement in the relevant engagement and satisfaction metrics.</p>`;
+  }
+}
+
+function genPRD(idea, ctx) {
+  const tone = currentTone;
+  const productLabel = ctx.isB2B ? 'B2B SaaS' : ctx.isMobile ? 'mobile app' : 'web product';
+
+  const storyPrefix = ctx.isOnboarding ? 'new user going through setup' :
+    ctx.isChurn ? 'existing user at risk of churning' :
+    ctx.isReferral ? 'power user who loves the product' : 'core user';
+
+  return `<div class="content-block" id="prd-problem">
+<h3>1. Problem Statement</h3>
+<p>${idea.trim()}. This creates measurable friction that prevents users from realizing full product value and directly impacts activation, retention, and revenue metrics.</p>
+
+<div class="divider"></div>
+<h3>2. Target Users</h3>
+<ul>
+  <li><strong>Primary:</strong> ${ctx.primaryUser} of the ${productLabel}</li>
+  <li><strong>Secondary:</strong> Admins, team leads, or power users who influence adoption decisions</li>
+  <li><strong>Excluded:</strong> Enterprise accounts with custom onboarding contracts (handled by CS team)</li>
+</ul>
+
+<div class="divider"></div>
+<h3>3. User Stories</h3>
+<ul>
+  <li>As a <strong>${storyPrefix}</strong>, I want to <strong>quickly understand the product's core value</strong>, so that I can <strong>decide whether it's worth my continued time investment</strong>.</li>
+  <li>As a <strong>${storyPrefix}</strong>, I want to <strong>complete the core action with minimal guidance</strong>, so that I can <strong>feel competent and successful immediately</strong>.</li>
+  <li>As a <strong>returning user</strong>, I want to <strong>pick up where I left off</strong>, so that I can <strong>maintain continuity without re-learning the interface</strong>.</li>
+  <li>As a <strong>team admin</strong>, I want to <strong>see aggregated engagement data</strong>, so that I can <strong>identify team members who need support</strong>.</li>
+</ul>
+
+<div class="divider"></div>
+<h3>4. Acceptance Criteria</h3>
+<ul>
+  <li>✅ A new user can complete the core flow in under <strong>3 minutes</strong> without external help</li>
+  <li>✅ The UI renders correctly on desktop (1024px+), tablet (768px+), and mobile (375px+)</li>
+  <li>✅ All interactions load in under <strong>1.5 seconds</strong> (P95) on a 4G connection</li>
+  <li>✅ Error states are clearly communicated with actionable recovery paths</li>
+  <li>✅ The feature is accessible at WCAG 2.1 AA standard</li>
+  <li>✅ Analytics events fire correctly for all key actions (validated in staging)</li>
+  <li>✅ A/B test infrastructure is in place before launch</li>
+</ul>
+
+<div class="divider"></div>
+<h3>5. Risks & Edge Cases</h3>
+<ul>
+  <li><strong>Risk:</strong> Users with slow network connections see degraded performance → Implement loading states and offline fallbacks</li>
+  <li><strong>Risk:</strong> Localization edge cases if product serves international users → Test with RTL languages and non-Latin character sets</li>
+  <li><strong>Edge Case:</strong> User abandons mid-flow and returns later → Persist progress state for at least 7 days</li>
+  <li><strong>Edge Case:</strong> User completes flow on mobile but continues on desktop → Cross-device state sync required</li>
+  <li><strong>Risk:</strong> Feature cannibalizes or conflicts with existing functionality → Map to current IA before building</li>
+</ul>
+
+<div class="divider"></div>
+<h3>6. Dependencies</h3>
+<ul>
+  <li>🔗 <strong>Auth team:</strong> Session handling and cross-device token management</li>
+  <li>🔗 <strong>Data platform:</strong> Event tracking schema must be agreed before development starts</li>
+  <li>🔗 <strong>Design system:</strong> New components must be reviewed and merged to design system</li>
+  <li>🔗 <strong>Growth team:</strong> Experiment framework availability for A/B testing</li>
+  <li>🔗 <strong>Legal/Compliance:</strong> If collecting additional user data, DPA review required</li>
+</ul>
+</div>`;
+}
+
+function genScope(idea, ctx) {
+  const inScope = ctx.isOnboarding
+    ? ['Redesigned step-by-step activation flow', 'Progress indicator and milestone celebrations', 'Contextual tooltips and inline help', 'First-run experience for core feature', 'Welcome email sequence (3 emails)', 'Analytics instrumentation for all steps']
+    : ctx.isChurn
+    ? ['In-product engagement nudges for at-risk users', 'Cancellation flow with save offers', 'Win-back email sequence', 'Usage health score dashboard for admins', 'Downgrade path as alternative to cancel', 'Churn reason capture survey']
+    : ctx.isReferral
+    ? ['Referral dashboard in user account settings', 'Unique referral link generation per user', 'Email share and copy-link functionality', 'Referee landing page with referral context', 'Reward fulfillment automation (credit or feature)', 'Referral analytics dashboard for the PM team']
+    : ['Core user-facing feature flow', 'Error handling and edge case coverage', 'Analytics event instrumentation', 'Mobile-responsive implementation', 'A/B test infrastructure setup', 'Documentation update'];
+
+  const outScope = ctx.isOnboarding
+    ? ['White-glove enterprise onboarding (CS scope)', 'Video walkthrough content (post-MVP)', 'In-app live chat support', 'Multi-language localization (Phase 2)', 'API onboarding for developer users', 'Admin-triggered onboarding re-runs']
+    : ctx.isChurn
+    ? ['Predictive ML churn model (Phase 2)', 'Manual CS outreach automation', 'Custom cancellation flows per plan tier', 'Churn analysis for <30-day cohorts', 'Competitive win-back campaigns', 'Refund processing automation']
+    : ctx.isReferral
+    ? ['Two-sided marketplace referral programs', 'Social media auto-posting integrations', 'Multi-tier referral structures (MLM-style)', 'Cash payouts (legal complexity, Phase 2)', 'Referral leaderboards and gamification', 'Partner/affiliate program management']
+    : ['Full redesign of adjacent features', 'Third-party integrations (unless critical path)', 'Backfill of historical data', 'Native mobile apps (web-first)', 'Admin tooling beyond basic visibility', 'Automated QA test suite (tracked separately)'];
+
+  return `<div class="scope-grid">
+    <div class="scope-col">
+      <div class="scope-col-header in">✅ MVP — In Scope</div>
+      ${inScope.map(i => `<div class="scope-item"><span class="scope-dot in"></span>${i}</div>`).join('')}
+    </div>
+    <div class="scope-col">
+      <div class="scope-col-header out">🚫 Out of Scope</div>
+      ${outScope.map(i => `<div class="scope-item"><span class="scope-dot out"></span>${i}</div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function genPriority(idea, ctx) {
+  const items = ctx.isOnboarding
+    ? [
+        { name: 'Core activation flow redesign', reach: 1000, impact: 3, conf: 90, effort: 8, moscow: 'Must' },
+        { name: 'Progress indicator & milestone states', reach: 1000, impact: 2, conf: 80, effort: 3, moscow: 'Must' },
+        { name: 'Welcome email sequence', reach: 1000, impact: 2, conf: 70, effort: 2, moscow: 'Should' },
+        { name: 'Contextual tooltips system', reach: 800, impact: 2, conf: 60, effort: 5, moscow: 'Should' },
+        { name: 'Onboarding completion dashboard', reach: 50, impact: 1, conf: 80, effort: 2, moscow: 'Could' },
+        { name: 'Video walkthrough content', reach: 600, impact: 1, conf: 50, effort: 8, moscow: "Won't" },
+      ]
+    : ctx.isChurn
+    ? [
+        { name: 'Cancellation save flow', reach: 200, impact: 3, conf: 85, effort: 5, moscow: 'Must' },
+        { name: 'Churn risk in-app nudges', reach: 400, impact: 2, conf: 70, effort: 6, moscow: 'Must' },
+        { name: 'Churn reason capture survey', reach: 200, impact: 2, conf: 90, effort: 2, moscow: 'Must' },
+        { name: 'Downgrade path creation', reach: 200, impact: 2, conf: 75, effort: 4, moscow: 'Should' },
+        { name: 'Win-back email sequence', reach: 200, impact: 2, conf: 65, effort: 3, moscow: 'Should' },
+        { name: 'Predictive churn ML model', reach: 400, impact: 3, conf: 40, effort: 20, moscow: "Won't" },
+      ]
+    : [
+        { name: 'Core feature implementation', reach: 1000, impact: 3, conf: 80, effort: 8, moscow: 'Must' },
+        { name: 'Analytics instrumentation', reach: 1000, impact: 2, conf: 95, effort: 2, moscow: 'Must' },
+        { name: 'Error handling & edge cases', reach: 300, impact: 3, conf: 90, effort: 3, moscow: 'Must' },
+        { name: 'Mobile optimization', reach: 600, impact: 2, conf: 80, effort: 4, moscow: 'Should' },
+        { name: 'Notification / email triggers', reach: 500, impact: 1, conf: 70, effort: 3, moscow: 'Could' },
+        { name: 'Admin reporting dashboard', reach: 20, impact: 1, conf: 60, effort: 5, moscow: "Won't" },
+      ];
+
+  const moscowClass = { 'Must': 'p-must', 'Should': 'p-should', 'Could': 'p-could', "Won't": 'p-wont' };
+
+  const rows = items.map(i => {
+    const rice = Math.round((i.reach * i.impact * (i.conf / 100)) / i.effort);
+    return `<tr>
+      <td><strong>${i.name}</strong></td>
+      <td>${i.reach.toLocaleString()}</td>
+      <td>${i.impact}×</td>
+      <td>${i.conf}%</td>
+      <td>${i.effort}</td>
+      <td><span class="rice-score">${rice}</span></td>
+      <td><span class="priority-badge ${moscowClass[i.moscow]}">${i.moscow}</span></td>
+    </tr>`;
+  }).join('');
+
+  return `<table class="priority-table">
+    <thead><tr>
+      <th>Feature / Initiative</th><th>Reach</th><th>Impact</th><th>Confidence</th><th>Effort (wks)</th><th>RICE Score</th><th>MoSCoW</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function genRollout(idea, ctx) {
+  const phases = ctx.isOnboarding
+    ? [
+        { name: 'Alpha — Internal Dog-food', timeline: 'Week 1–2', desc: 'Ship to internal team and 50 invited beta users. No feature flags removed. Focus on bugs, accessibility, and analytics validation.' },
+        { name: 'Closed Beta — 10% Traffic', timeline: 'Week 3–4', desc: 'Gate to 10% of new signups via feature flag. Monitor activation rate, time-to-complete, and support ticket volume. Define rollback triggers.' },
+        { name: 'Ramp — 50% Traffic', timeline: 'Week 5–6', desc: 'A/B test old vs. new flow at 50/50 split. Measure activation delta with statistical significance (p<0.05, 80% power). Iterate on friction points.' },
+        { name: 'General Availability', timeline: 'Week 7+', desc: 'Roll out to 100% of new users. Deprecate old flow. Set up ongoing monitoring dashboards and automated anomaly alerts.' },
+      ]
+    : [
+        { name: 'Internal Preview', timeline: 'Week 1', desc: 'Build in feature flag. Internal QA and stakeholder review. Final go/no-go against acceptance criteria.' },
+        { name: 'Closed Beta (5–10%)', timeline: 'Week 2–3', desc: 'Limited rollout to selected user segment. Collect qualitative feedback. Confirm analytics events fire correctly.' },
+        { name: 'Controlled Ramp (50%)', timeline: 'Week 4–5', desc: 'A/B test at 50/50. Measure impact on target KPIs. Ensure no regression in adjacent metrics.' },
+        { name: 'Full Launch + Monitor', timeline: 'Week 6+', desc: '100% rollout. Announce to users if user-facing. Set 30-day post-launch review date. Document learnings.' },
+      ];
+
+  return `<div class="rollout-phases">
+    ${phases.map((p, i) => `
+    <div class="rollout-phase">
+      <div class="phase-indicator">
+        <div class="phase-circle">${i + 1}</div>
+        ${i < phases.length - 1 ? '<div class="phase-line"></div>' : ''}
+      </div>
+      <div class="phase-content">
+        <div class="phase-name">${p.name}</div>
+        <div class="phase-timeline">⏱ ${p.timeline}</div>
+        <div class="phase-desc">${p.desc}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function genPersonas(idea, ctx) {
+  const personas = ctx.isOnboarding
+    ? [
+        { emoji: '👩‍💼', name: 'Maya Chen', role: 'Marketing Manager, Mid-market SaaS', goals: ['Automate campaign reporting', 'Reduce time on manual data pulls', 'Prove ROI to leadership'], pains: ['Complex setup overwhelms first-timers', 'Time-to-first-value feels too long', 'No clear path to "aha moment"'], behaviors: ['Skips onboarding, jumps to features', 'Opens help docs in new tab immediately', 'Churns if confused within 10 min'] },
+        { emoji: '👨‍💻', name: 'James Park', role: 'Startup Founder, Series A', goals: ['Ship product fast', 'Validate core loop', 'Prove traction to investors'], pains: ['Reads zero documentation', 'Frustrated by permission setup friction', 'Doesn\'t want to "learn" a tool'], behaviors: ['Skims UI for obvious actions', 'Prefers in-app guidance over emails', 'Advocates internally if impressed in first session'] },
+        { emoji: '👩‍🔬', name: 'Priya Nair', role: 'Operations Lead, Enterprise', goals: ['Standardize team workflows', 'Ensure compliance and auditability', 'Centralize tooling for her team'], pains: ['Needs admin controls before inviting team', 'Enterprise SSO not available during trial', 'Concerned about data residency'], behaviors: ['Reads every tooltip', 'Tests edge cases methodically', 'Evaluation takes 2–3 weeks before commit'] },
+      ]
+    : ctx.isChurn
+    ? [
+        { emoji: '😤', name: 'Tom Bradley', role: 'SMB Owner, 2-year customer', goals: ['Keep costs low', 'Get clear value from tools', 'Simple team management'], pains: ['Paying for features he doesn\'t use', 'Billing confusion leads to frustration', 'Competitor offers same at lower cost'], behaviors: ['Cancels when billing renews', 'Hasn\'t logged in for 3 weeks before canceling', 'Would stay for a downgrade option'] },
+        { emoji: '👩‍💼', name: 'Rachel Kim', role: 'Team Lead, scaling startup', goals: ['Prove tool ROI to CFO', 'Increase team adoption', 'Automate repetitive workflows'], pains: ['Team isn\'t using the product consistently', 'Can\'t measure impact easily', 'Leadership pressure to cut SaaS spend'], behaviors: ['Churns when budget review happens', 'Would renew with usage data to show boss', 'Responds well to success manager outreach'] },
+        { emoji: '👨‍🎓', name: 'Chris Liu', role: 'Individual contributor, freelancer', goals: ['Accomplish specific task quickly', 'No long-term commitment needed', 'Learn new skills fast'], pains: ['Monthly billing feels heavy for occasional use', 'Core feature changed and broke his workflow', 'Support response time too slow'], behaviors: ['Churns after specific failure moment', 'Would return if pain point resolved', 'Talks about products publicly online'] },
+      ]
+    : [
+        { emoji: '🌟', name: 'Alex Rivera', role: 'Power User, early adopter', goals: ['Maximize productivity', 'Be first to use new features', 'Share useful tools with network'], pains: ['Feature gaps force workarounds', 'Wants more customization', 'Referral program doesn\'t exist yet'], behaviors: ['Logs in 5+ days/week', 'Participates in betas', 'High referral intent but no mechanism'] },
+        { emoji: '👤', name: 'Sam Okafor', role: 'Casual User, mid-engagement', goals: ['Solve specific recurring problem', 'Minimal setup overhead', 'Reliable, predictable experience'], pains: ['Inconsistent experience across devices', 'Feature discovery is hard', 'Notifications feel spammy'], behaviors: ['Logs in 2–3 days/week', 'Uses 1–2 core features only', 'Churns when core need disappears'] },
+        { emoji: '🏢', name: 'Dana Lee', role: 'Enterprise Admin, IT decision maker', goals: ['Centralized team management', 'Security and compliance first', 'Predictable cost structure'], pains: ['No enterprise-grade admin controls', 'Audit logs missing', 'Provisioning is manual'], behaviors: ['Evaluates tools for 4–6 weeks', 'Requires SSO/SAML', 'Churns if compliance gap found'] },
+      ];
+
+  return `<div class="persona-grid">
+    ${personas.map(p => `
+    <div class="persona-card">
+      <div class="persona-avatar">${p.emoji}</div>
+      <div class="persona-name">${p.name}</div>
+      <div class="persona-role">${p.role}</div>
+      <div class="persona-section-label">Goals</div>
+      <div class="persona-tags">${p.goals.map(g => `<span class="persona-tag tag-goal">${g}</span>`).join('')}</div>
+      <div class="persona-section-label">Pain Points</div>
+      <div class="persona-tags">${p.pains.map(g => `<span class="persona-tag tag-pain">${g}</span>`).join('')}</div>
+      <div class="persona-section-label">Behaviors</div>
+      <div class="persona-tags">${p.behaviors.map(g => `<span class="persona-tag tag-behavior">${g}</span>`).join('')}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function genMetrics(idea, ctx) {
+  const northStar = ctx.isOnboarding ? { name: 'Activation Rate', desc: '% of new signups who complete the core action within 7 days', val: 'Target: >65%' }
+    : ctx.isChurn ? { name: 'Monthly Retention Rate', desc: '% of users still active 30 days after their previous active session', val: 'Target: >85%' }
+    : ctx.isReferral ? { name: 'Viral Coefficient (K-factor)', desc: 'Average referrals per user × conversion rate of referred visitors', val: 'Target: >0.4' }
+    : { name: 'Weekly Active Users (WAU)', desc: 'Users who complete at least 1 core action per week', val: 'Target: +25% MoM' };
+
+  const leading = ctx.isOnboarding
+    ? [
+        { name: 'Step Completion Rate', desc: '% of users who complete each step of the onboarding flow', val: 'Per-step' },
+        { name: 'Time to First Value (TTFV)', desc: 'Median minutes from signup to first meaningful action', val: '<8 min target' },
+        { name: 'Onboarding Funnel Drop-off', desc: 'Where users abandon the flow — tracked per step', val: 'Per-step heatmap' },
+      ]
+    : ctx.isChurn
+    ? [
+        { name: 'Feature Engagement Score', desc: 'Weighted score of how many core features a user engages weekly', val: '0–100 scale' },
+        { name: 'Login Frequency Decline', desc: '% drop in sessions vs. prior 2-week average — churn signal', val: '>30% drop = at-risk' },
+        { name: 'Support Ticket Volume', desc: 'Users with 2+ unresolved support tickets in 30 days are 3× more likely to churn', val: 'Early warning' },
+      ]
+    : [
+        { name: 'Feature Discovery Rate', desc: '% of target users who find and interact with the feature within 7 days', val: 'Track via funnel' },
+        { name: 'Engagement Frequency', desc: 'How often target users engage with the feature per week', val: 'Goal: 3× avg' },
+        { name: 'Error Rate', desc: '% of sessions that encounter an error state in the core flow', val: 'Target: <1%' },
+      ];
+
+  const lagging = ctx.isOnboarding
+    ? [
+        { name: '30-Day Retention', desc: '% of activated users still active 30 days post-activation', val: 'Target: >55%' },
+        { name: 'Expansion Revenue Rate', desc: 'Rate at which activated users upgrade to paid/higher tier', val: 'Tie to activation cohort' },
+      ]
+    : ctx.isChurn
+    ? [
+        { name: 'Monthly Churn Rate', desc: '% of subscribers who cancel in a given month', val: 'Target: <3%' },
+        { name: 'Save Rate', desc: '% of users who begin cancellation and are retained by save offer', val: 'Target: >20%' },
+      ]
+    : [
+        { name: 'Retention Impact', desc: 'Delta in 30-day retention between users who used feature vs. those who didn\'t', val: 'Primary success metric' },
+        { name: 'Revenue Attribution', desc: 'MRR from accounts where target feature is a stated retention reason', val: 'Tracked in renewal surveys' },
+      ];
+
+  const risks = [
+    { name: 'Survivorship Bias', desc: 'Measuring only users who stayed may mask the signal of those who churned before engaging', val: 'Include churned cohorts' },
+    { name: 'Novelty Effect', desc: 'Short-term metric improvement may be due to newness, not real value — watch 60-90 day lag metrics', val: 'Set 90-day hold period' },
+  ];
+
+  const instrumentation = ctx.isOnboarding
+    ? ['Track `onboarding_step_viewed`, `onboarding_step_completed`, `onboarding_abandoned` events', 'Add `activation_event` as a dedicated conversion goal in your analytics tool', 'Set up cohort analysis: activated vs. not-activated → 30d retention', 'Create funnel visualization per step with time-between-steps breakdown', 'Alert on: activation rate drops >5pp week-over-week']
+    : ['Define and instrument all core feature events with a consistent naming schema', 'Set up user-level engagement scoring updated daily', 'Create a health score dashboard for CS team visibility', 'Configure automated alerts for significant metric regressions', 'A/B test flag must be tied to analytics events from day one of experiment'];
+
+  const card = (type, label, items, cls) => `
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-header">
+        <div class="section-title-row">
+          <div class="section-title">${label}</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="metric-grid">
+          ${items.map(m => `<div class="metric-card">
+            <div class="metric-type ${cls}">${type}</div>
+            <div class="metric-name">${m.name}</div>
+            <div class="metric-desc">${m.desc}</div>
+            <div class="metric-value">${m.val}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  return `
+  <div class="section-card" style="margin-bottom:16px;">
+    <div class="section-header">
+      <div class="section-title-row"><div class="section-title">⭐ North Star Metric</div></div>
+    </div>
+    <div class="section-body">
+      <div class="metric-card" style="border-color:#fbbf24; border-width:2px;">
+        <div class="metric-type north-star">NORTH STAR</div>
+        <div class="metric-name">${northStar.name}</div>
+        <div class="metric-desc">${northStar.desc}</div>
+        <div class="metric-value">${northStar.val}</div>
+      </div>
+    </div>
+  </div>
+  ${card('LEADING INDICATOR', '📈 Leading Indicators', leading, 'leading')}
+  ${card('LAGGING INDICATOR', '📉 Lagging Indicators', lagging, 'lagging')}
+  ${card('MEASUREMENT RISK', '⚠️ Measurement Risks', risks, 'risk')}
+  <div class="section-card">
+    <div class="section-header"><div class="section-title-row"><div class="section-title">🔧 Instrumentation Recommendations</div></div></div>
+    <div class="section-body">
+      <div class="content-block"><ul>${instrumentation.map(i => `<li>${i}</li>`).join('')}</ul></div>
+    </div>
+  </div>`;
+}
+
+function genExperiments(idea, ctx) {
+  const experiments = ctx.isOnboarding
+    ? [
+        {
+          name: 'Onboarding Flow Redesign',
+          type: 'A/B Test',
+          hypothesis: 'If we replace the generic feature tour with a goal-directed 3-step setup wizard, then activation rate will increase by ≥15% because users reach value faster.',
+          control: 'Current 6-step feature tour with no personalization',
+          variant: 'New 3-step goal-based setup wizard with personalized content per job-to-be-done',
+          metric: 'Activation rate (7-day)',
+          sample: '2,000 new signups (1,000 per group)',
+          duration: '3 weeks',
+          expected: '+15–25% activation rate; <5% increase in time-to-complete'
+        },
+        {
+          name: 'Social Proof in Welcome Screen',
+          type: 'Multivariate',
+          hypothesis: 'Adding "X teams like yours use this feature" social proof at the welcome step reduces hesitation and increases step completion.',
+          control: 'No social proof — generic welcome message',
+          variant: 'Dynamic social proof: "1,200 marketing teams use this to X"',
+          metric: 'Step 1 completion rate',
+          sample: '1,500 new signups per variant',
+          duration: '2 weeks',
+          expected: '+5–12% step 1 completion; no degradation in later steps'
+        },
+      ]
+    : ctx.isChurn
+    ? [
+        {
+          name: 'Cancellation Save Offer',
+          type: 'A/B Test',
+          hypothesis: 'Presenting a 2-month discount at the cancellation confirmation screen will save ≥20% of users who initiate cancellation.',
+          control: 'Current cancellation flow: confirm → done',
+          variant: 'New flow: confirm → save offer (2-month 30% discount) → confirm or accept',
+          metric: 'Save rate (% who cancel and re-activate within 30 days)',
+          sample: 'All users who initiate cancellation over 6 weeks',
+          duration: '6 weeks',
+          expected: '20–30% save rate from offer; incremental revenue offsets discount cost'
+        },
+        {
+          name: 'Re-engagement Nudge Timing',
+          type: 'A/B Test',
+          hypothesis: 'Sending an in-product engagement nudge on Day 14 of inactivity (vs. Day 21) will recover more at-risk users before the churn decision is made.',
+          control: 'Email at Day 21 of inactivity',
+          variant: 'In-app + email at Day 14 with personalized feature recommendation',
+          metric: 'Re-engagement rate (session within 7 days of nudge)',
+          sample: '500 inactive users per group',
+          duration: '4 weeks',
+          expected: '+10–20% re-engagement rate in variant group; lower unsubscribe rate'
+        },
+      ]
+    : [
+        {
+          name: 'Feature Discovery Placement',
+          type: 'A/B Test',
+          hypothesis: 'Moving the feature entry point from the settings menu to the primary navigation will increase feature discovery by ≥30%.',
+          control: 'Feature accessible via Settings → Advanced',
+          variant: 'Feature accessible via primary nav with subtle "New" badge',
+          metric: 'Feature discovery rate (% of WAU who interact with feature)',
+          sample: '5,000 users (2,500 per group)',
+          duration: '2 weeks',
+          expected: '+30–50% feature discovery; neutral impact on other nav engagement'
+        },
+        {
+          name: 'Contextual Onboarding Tooltip',
+          type: 'A/B Test',
+          hypothesis: 'A single contextual tooltip appearing on first relevant screen will increase feature adoption without adding friction.',
+          control: 'No tooltip — feature discovered organically',
+          variant: 'One-time dismissible tooltip on relevant trigger condition',
+          metric: 'Feature activation rate within 7 days',
+          sample: '3,000 new users',
+          duration: '3 weeks',
+          expected: '+20% activation; tooltip dismissed in <3 sec for >70% of users'
+        },
+      ];
+
+  return `<div id="experiments-content-inner">
+    ${experiments.map(e => `
+    <div class="experiment-item">
+      <div class="experiment-header-bar">
+        <span class="experiment-name">${e.name}</span>
+        <span class="experiment-badge">${e.type}</span>
+      </div>
+      <div class="experiment-body">
+        <div class="inline-label">Hypothesis</div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:12px;line-height:1.6;">${e.hypothesis}</p>
+        <div class="exp-row">
+          <div>
+            <div class="exp-col-label">Control</div>
+            <div class="exp-col-val">${e.control}</div>
+          </div>
+          <div>
+            <div class="exp-col-label">Variant</div>
+            <div class="exp-col-val">${e.variant}</div>
+          </div>
+        </div>
+        <div class="exp-row">
+          <div>
+            <div class="exp-col-label">Primary Metric</div>
+            <div class="exp-col-val">${e.metric}</div>
+          </div>
+          <div>
+            <div class="exp-col-label">Sample Size / Duration</div>
+            <div class="exp-col-val">${e.sample} · ${e.duration}</div>
+          </div>
+        </div>
+        <div class="inline-label" style="margin-top:4px;">Expected Outcome</div>
+        <div style="font-size:13px;color:var(--text-muted);">${e.expected}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function genInsights(idea, ctx) {
+  const failures = ctx.isOnboarding
+    ? ['Optimizing the tour without fixing underlying product complexity', 'Activation rate improves but 30-day retention stays flat (wrong aha moment)', 'Personalization adds engineering complexity that delays launch', 'A/B test runs underpowered and ship wrong variant', 'Onboarding improves but email sequence underperforms']
+    : ctx.isChurn
+    ? ['Save offer cannibalizes revenue (heavy discount to users who wouldn\'t have churned anyway)', 'Churn signal is too late — users have already decided to leave', 'Re-engagement nudges increase unsubscribes instead of saving users', 'Solving stated churn reason but not actual root cause', 'Downgrade path creates revenue leakage without improving LTV']
+    : ['Feature gets built but not discovered — sitting in a settings menu no one visits', 'Optimization local-maxima: improves one metric while regressing another', 'Over-engineering the MVP adds 3 sprints and ships too late', 'No instrumentation means no learning after launch', 'Strong PM conviction, weak user validation — building a solution no one asked for'];
+
+  const tradeoffs = [
+    { a: 'Ship Fast', b: 'Ship Right', desc: 'An underbaked MVP teaches you something; a never-shipped perfect product teaches you nothing. Default toward shipping with clear rollback triggers.' },
+    { a: 'Broad Reach', b: 'Deep Impact', desc: 'A feature used by 10% of users that dramatically improves their experience may create more LTV than one used by 80% of users superficially.' },
+    { a: 'User Requests', b: 'User Behavior', desc: 'What users say they want and what they actually do are different. Trust behavioral data over interview feedback when they conflict.' },
+  ];
+
+  const alternatives = ctx.isOnboarding
+    ? ['Hire onboarding specialist / CS to do high-touch onboarding for 60 days → learn what works → then automate', 'Build an in-product checklist (like Basecamp or Intercom) instead of a linear wizard', 'Reduce scope of product itself — simplify core feature to make onboarding unnecessary', 'Use personalized video onboarding (Loom) before investing in interactive flows']
+    : ctx.isChurn
+    ? ['Fix the core product problem causing churn rather than adding retention mechanics', 'Shift to usage-based pricing so users don\'t feel they\'re paying for what they don\'t use', 'Invest in CS-driven check-ins for high-value accounts before they hit churn signals', 'Create a community/peer network that increases switching costs organically']
+    : ['Improve existing feature by 20% instead of building new one', 'Partner integration to solve the problem without building from scratch', 'Build an API and let power users self-serve the capability', 'Solve via content (documentation, templates) before building a feature'];
+
+  const dontBuild = ctx.isOnboarding
+    ? ['A 10-step video tutorial no one watches', 'An AI chatbot during onboarding (adds complexity without clear value)', 'Aggressive email sequences that trigger spam filters', 'Onboarding flow that\'s the same for all user types and job-to-be-done']
+    : ['Anything that requires major tech debt without a clear metric upside', 'Features that serve <5% of users but consume 40% of roadmap time', 'Edge case handling that belongs in a later phase', 'Dashboard features before core product value is established'];
+
+  const critique = ctx.isOnboarding
+    ? ['If your activation rate is <40%, a new onboarding flow is a band-aid — the real issue is product-market fit or wrong user targeting.', 'Personalization sounds powerful but requires substantial data you may not have on new users — validate before building.', 'If power users skip onboarding entirely, the problem may be for average users only — don\'t over-engineer for the median.']
+    : ctx.isChurn
+    ? ['Churn interventions treat symptoms, not causes. If users are churning because a competitor is genuinely better, no save offer will fix that.', 'Re-engagement nudges can backfire and accelerate the decision to cancel. Test carefully.', 'Measuring "save rate" without measuring 6-month LTV post-save is misleading — saved users may just delay inevitable churn.']
+    : ['Be honest: is this feature being built because users need it, or because a competitor has it?', 'Every feature added to a product increases complexity for all users — including those who don\'t want it. Be conservative.', 'If you can\'t explain why this moves your North Star metric in under 2 sentences, the strategy isn\'t clear enough yet.'];
+
+  return `<div class="insight-grid">
+    <div class="insight-card danger">
+      <div class="insight-card-title">⚠️ Potential Failure Reasons</div>
+      <ul class="insight-list">${failures.map(f => `<li>${f}</li>`).join('')}</ul>
+    </div>
+    <div class="insight-card warning">
+      <div class="insight-card-title">⚖️ Key Tradeoffs</div>
+      <ul class="insight-list">${tradeoffs.map(t => `<li><strong>${t.a} vs. ${t.b}:</strong> ${t.desc}</li>`).join('')}</ul>
+    </div>
+    <div class="insight-card info">
+      <div class="insight-card-title">🔄 Alternative Solutions</div>
+      <ul class="insight-list">${alternatives.map(a => `<li>${a}</li>`).join('')}</ul>
+    </div>
+    <div class="insight-card success">
+      <div class="insight-card-title">🚫 What NOT to Build</div>
+      <ul class="insight-list">${dontBuild.map(d => `<li>${d}</li>`).join('')}</ul>
+    </div>
+  </div>
+  <div class="section-card" style="margin-top:16px;">
+    <div class="section-header"><div class="section-title-row"><div class="section-title">🔍 Feature Critique</div></div></div>
+    <div class="section-body">
+      <div class="content-block"><ul>${critique.map(c => `<li style="margin-bottom:8px;">${c}</li>`).join('')}</ul></div>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// MARKDOWN EXPORT
+// ─────────────────────────────────────────────
+function buildMarkdown() {
+  const idea = currentIdea;
+  const date = new Date().toISOString().split('T')[0];
+  return `# Product Requirements Document
+> Generated by AI Product Manager Copilot
+> Date: ${date}
+> Idea: ${idea}
+
+---
+
+## Refined Problem Statement
+${document.getElementById('refined-content')?.innerText || ''}
+
+---
+
+## Full PRD
+${document.getElementById('prd-full')?.innerText || ''}
+
+---
+
+## Scope
+${document.getElementById('scope-content')?.innerText || ''}
+
+---
+
+## Prioritization
+${document.getElementById('priority-content')?.innerText || ''}
+
+---
+
+## Personas
+${document.getElementById('personas-content')?.innerText || ''}
+
+---
+
+## Metrics Brain
+${document.getElementById('metrics-content')?.innerText || ''}
+
+---
+
+## Experimentation Plan
+${document.getElementById('experiments-content')?.innerText || ''}
+
+---
+
+## Product Insights
+${document.getElementById('insights-content')?.innerText || ''}
+`;
+}
+
+// ─────────────────────────────────────────────
+// MAIN GENERATE FLOW
+// ─────────────────────────────────────────────
+const STEPS = [
+  { label: 'Analyzing problem space and user context…', icon: '🔍' },
+  { label: 'Generating clarifying questions…', icon: '❓' },
+  { label: 'Detecting key assumptions…', icon: '⚠️' },
+  { label: 'Refining problem statement…', icon: '🎯' },
+  { label: 'Building full PRD…', icon: '📄' },
+  { label: 'Generating user personas…', icon: '👤' },
+  { label: 'Running Metrics Brain…', icon: '📊' },
+  { label: 'Designing experiment plan…', icon: '🧪' },
+  { label: 'Synthesizing product insights…', icon: '💡' },
+];
+
+function renderProgressSteps(activeIdx) {
+  const container = document.getElementById('progress-steps');
+  container.innerHTML = STEPS.map((s, i) => {
+    const isDone = i < activeIdx;
+    const isActive = i === activeIdx;
+    return `<div class="progress-step ${isDone ? 'done' : isActive ? 'active' : ''}">
+      ${isDone ? '<span class="step-icon">✅</span>' : isActive ? '<div class="step-spinner"></div>' : '<span class="step-icon" style="color:var(--border)">○</span>'}
+      <span>${s.icon} ${s.label}</span>
+    </div>`;
+  }).join('');
+}
+
+async function simulateStep(idx, delay) {
+  renderProgressSteps(idx);
+  await sleep(delay);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function generate() {
+  const idea = document.getElementById('idea-input').value.trim();
+  if (!idea) {
+    document.getElementById('idea-input').style.borderColor = '#ef4444';
+    setTimeout(() => document.getElementById('idea-input').style.borderColor = '', 1500);
+    return;
+  }
+
+  currentIdea = idea;
+  const ctx = extractContext(idea);
+
+  // UI state
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('progress-card').classList.add('visible');
+  document.getElementById('output-area').classList.remove('visible');
+
+  // Simulate steps
+  const delays = [400, 500, 400, 500, 700, 500, 600, 500, 400];
+  for (let i = 0; i < STEPS.length; i++) {
+    await simulateStep(i, delays[i]);
+  }
+  renderProgressSteps(STEPS.length); // all done
+
+  await sleep(300);
+
+  // Generate all content
+  document.getElementById('clarify-content').innerHTML = genClarifyingQuestions(idea, ctx)
+    .map((q, i) => `<div class="question-item"><div class="question-num">${i+1}</div><div><div class="question-text">${q.q}</div><div class="question-why">Why this matters: ${q.why}</div></div></div>`)
+    .join('');
+
+  document.getElementById('assumptions-content').innerHTML = genAssumptions(idea, ctx)
+    .map(a => `<div class="assumption-item"><span class="assumption-icon">💭</span><div><div class="assumption-text">${a.text}</div><div class="assumption-risk">Risk level: ${a.risk}</div></div></div>`)
+    .join('');
+
+  document.getElementById('refined-content').innerHTML = genRefinedProblem(idea, ctx);
+  document.getElementById('prd-full').innerHTML = genPRD(idea, ctx);
+  document.getElementById('scope-content').innerHTML = genScope(idea, ctx);
+  document.getElementById('priority-content').innerHTML = genPriority(idea, ctx);
+  document.getElementById('rollout-content').innerHTML = genRollout(idea, ctx);
+  document.getElementById('personas-content').innerHTML = genPersonas(idea, ctx);
+  document.getElementById('metrics-content').innerHTML = genMetrics(idea, ctx);
+  document.getElementById('experiments-content').innerHTML = genExperiments(idea, ctx);
+  document.getElementById('insights-content').innerHTML = genInsights(idea, ctx);
+
+  // Store markdown source
+  generatedData = { idea, tone: currentTone };
+
+  // Show output
+  await sleep(200);
+  document.getElementById('progress-card').classList.remove('visible');
+  document.getElementById('output-area').classList.add('visible');
+  document.getElementById('gen-btn').disabled = false;
+
+  // Scroll to output
+  document.getElementById('output-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function regenSection(section) {
+  if (!currentIdea) return;
+  const ctx = extractContext(currentIdea);
+  showToast('Regenerating section…');
+  setTimeout(() => {
+    if (section === 'clarify') {
+      document.getElementById('clarify-content').innerHTML = genClarifyingQuestions(currentIdea, ctx)
+        .map((q, i) => `<div class="question-item"><div class="question-num">${i+1}</div><div><div class="question-text">${q.q}</div><div class="question-why">Why this matters: ${q.why}</div></div></div>`)
+        .join('');
+    } else if (section === 'assumptions') {
+      document.getElementById('assumptions-content').innerHTML = genAssumptions(currentIdea, ctx)
+        .map(a => `<div class="assumption-item"><span class="assumption-icon">💭</span><div><div class="assumption-text">${a.text}</div><div class="assumption-risk">Risk level: ${a.risk}</div></div></div>`)
+        .join('');
+    } else if (section === 'refined') {
+      document.getElementById('refined-content').innerHTML = genRefinedProblem(currentIdea, ctx);
+    } else if (section === 'prd') {
+      document.getElementById('prd-full').innerHTML = genPRD(currentIdea, ctx);
+    } else if (section === 'scope') {
+      document.getElementById('scope-content').innerHTML = genScope(currentIdea, ctx);
+    } else if (section === 'priority') {
+      document.getElementById('priority-content').innerHTML = genPriority(currentIdea, ctx);
+    } else if (section === 'rollout') {
+      document.getElementById('rollout-content').innerHTML = genRollout(currentIdea, ctx);
+    } else if (section === 'personas') {
+      document.getElementById('personas-content').innerHTML = genPersonas(currentIdea, ctx);
+    } else if (section === 'metrics') {
+      document.getElementById('metrics-content').innerHTML = genMetrics(currentIdea, ctx);
+    } else if (section === 'experiments') {
+      document.getElementById('experiments-content').innerHTML = genExperiments(currentIdea, ctx);
+    } else if (section === 'insights') {
+      document.getElementById('insights-content').innerHTML = genInsights(currentIdea, ctx);
+    }
+    showToast('Section refreshed');
+  }, 400);
+}
+</script>
+</body>
+</html>
